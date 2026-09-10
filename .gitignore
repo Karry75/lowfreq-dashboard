@@ -1,0 +1,26 @@
+# ===== 隐私 / 凭证：绝不可提交 =====
+db_conf.json
+staff_auth.json
+.env
+*.secret
+
+# ===== 生成的消费者明细（本地连真实库时产生）=====
+out/*.xlsx
+out/回访名单.xlsx
+out/status.json
+out/schema_cache.json
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== 本地临时 / 系统 =====
+.DS_Store
+Thumbs.db
+*.bak
+*.log
+
+# ===== 已脱敏示例数据可提交，但原始真实数据不可提交 =====
+# out/records.json  (本仓库内置的是脱敏版本，安全)

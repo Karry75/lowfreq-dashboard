@@ -1,0 +1,17 @@
+{
+  "staff": [
+    "员工#20",
+    "员工#15",
+    "员工#17",
+    "员工#23",
+    "员工#03",
+    "员工#28",
+    "员工#02",
+    "员工#26"
+  ],
+  "daily_quota": 30,
+  "recall_days": 3,
+  "recall_cooldown_days": 5,
+  "today_staff": [],
+  "quotas": {}
+}

@@ -1,0 +1,3 @@
+https://ae71ffa2092522eec.sh7.agentos-app.net/lowfreq_local_v10.28.57_FINAL.zip
+# v10.28.57 完整包直链（性能专项：看板 28.8MB -> 2.15MB）
+# 备用：本目录 auto_fix57.bat 双击即可自动下载升级

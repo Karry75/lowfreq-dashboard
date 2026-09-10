@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>低频口径对照与"三千多→一千多"差异溯源</title>
+<style>
+  :root{ --line:#e6e8eb; --bg:#f7f8fa; --ink:#1f2329; --sub:#5b6168; --blue:#1f6feb; --orange:#b8740a; --green:#2e7d32; --red:#c0392b; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px}
+  h1{font-size:24px;margin:0 0 4px}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px}
+  .concl{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:16px 18px;margin:18px 0;font-size:15px}
+  h2{font-size:18px;margin:32px 0 10px;border-bottom:2px solid var(--line);padding-bottom:6px}
+  h3{font-size:15px;color:var(--sub);margin:20px 0 8px}
+  pre{background:#0d1117;color:#e6edf3;padding:14px 16px;border-radius:10px;overflow:auto;font-size:12.5px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;margin:12px 0;background:#fff;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#f0f3f7;font-weight:600}
+  .tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:12px;font-weight:600}
+  .t-blue{background:#e7f0ff;color:var(--blue)}
+  .t-orange{background:#fff3e0;color:var(--orange)}
+  .t-green{background:#e8f5e9;color:var(--green)}
+  .t-red{background:#fdecea;color:var(--red)}
+  .key{font-weight:600}
+  code{background:#eef1f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .note{background:#fff;border:1px dashed var(--line);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--sub);margin:14px 0}
+  ul{margin:8px 0 8px 4px;padding-left:20px}
+  li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>低频用户口径对照与"三千多 → 一千多"差异溯源</h1>
+<div class="meta">本地部署版 lowfreq_local · 基于 build_lists.py 当前代码与对话记录推断 · 2026-08-18</div>
+
+<div class="concl">
+<b>一句话结论：</b>现在"全部低频"还是一千多，<b>不是统计逻辑把你算少了</b>，而是<b>活跃母集（active_total）比"三千多"那会儿小了一大截</b>。而且反直觉的是——你记忆里"三千多"那版的口径其实<b>比现在更严格</b>（有"≤15 天新用户保护"），在同样的母集上它只会算得更少，绝不会更多。三千多是"更大母集 × 当时口径"的产物。
+</div>
+
+<h2>一、当前统计逻辑（build_lists.py 现状，已取消新用户保护）</h2>
+<p>看板"低频用户"按钮的计数 = <code>records.json</code> 里 <code>lf=1</code> 的行数，即后端判定结果，<b>没有任何隐藏筛选压低数字</b>。</p>
+<p><b>活跃母集定义（v10.6 起逐字一致未改）：</b></p>
+<pre>SELECT ... FROM cb_exchange_agreement a
+WHERE a.status IN ('working','owe_rent','unsubscribing') AND a.is_del = 0</pre>
+<p><b>低频判定（按协议生效后天数 use_days 与累计归还次数 total 分档）：</b></p>
+<pre>is_lf = False
+if use_days is not None:            # 全部活跃协议参与，含新激活 ≤15 天
+    if use_days &lt;= 30:  is_lf = total &lt; 1   # L1·≤30天档(&lt;1次)
+    elif use_days &lt;= 45: is_lf = total &lt; 2   # L2·30~45天档(&lt;2次)
+    elif use_days &lt;= 60: is_lf = total &lt; 3   # L3·45~60天档(&lt;3次)
+    else:                is_lf = total &lt; 4   # L4·&gt;60天档(&lt;4次)</pre>
+
+<h2>二、"三千多"是怎么来的（旧口径推断）</h2>
+<p>对话与代码注释表明，"三千多"那个时期的判定多了一条<b>新用户保护</b>：</p>
+<pre># 旧逻辑（取消保护前）
+if use_days is not None and use_days &gt; 15:   # 仅 &gt;15 天才参与判定
+    if use_days &lt;= 30:  is_lf = total &lt; 1   # L1
+    elif use_days &lt;= 45: is_lf = total &lt; 2  # L2
+    elif use_days &lt;= 60: is_lf = total &lt; 3  # L3
+    else:                is_lf = total &lt; 4   # L4
+# use_days &lt;= 15 的新用户：直接不算低频</pre>
+<p>也就是说，旧版<b>排除了所有刚激活 15 天内的新用户</b>，判定更严格。它之所以能算出三千多，靠的是当时<b>更大的活跃母集</b>——大量协议仍处在 <code>working / owe_rent / unsubscribing</code> 且 <code>is_del=0</code> 的状态。</p>
+
+<h2>三、为什么取消保护 + 全部低频后还是一千多</h2>
+<p>这里有两个相反方向的因素在拉扯：</p>
+<table>
+<tr><th>因素</th><th>方向</th><th>对低频数的影响</th></tr>
+<tr>
+  <td><span class="tag t-green">阈值效应</span> 取消 ≤15 天保护，口径变宽</td>
+  <td>同母集 → 低频 <b>↑</b></td>
+  <td>让数字变大（新口径比旧口径更宽松）</td>
+</tr>
+<tr>
+  <td><span class="tag t-red">母集效应</span> 活跃协议母集缩小（status / is_del 变化）</td>
+  <td>母集 ↓ → 低频 <b>↓</b></td>
+  <td>让数字变小，且是<b>主导因素</b></td>
+</tr>
+</table>
+<div class="note">
+<b>核心反直觉点：</b>"三千多"那版口径<b>更严格</b>（有 15 天保护）。所以即便在<b>同一个母集</b>上，旧口径算出的低频也只会 ≤ 现在（取消保护后）的结果。之前数字高，纯粹是因为<b>当时母集比现在大得多</b>。
+</div>
+
+<h2>四、按"之前的统计逻辑"在现在的母集上会是多少</h2>
+<p>把"旧口径（带 15 天保护）"套到<b>当前</b>这份 records.json 上复算，结果只会<b>等于或略小于</b>现在的一千多——<b>绝不可能回到三千多</b>。要回到三千多，必须先让 <code>active_total</code> 回到当年的量级，而不是调阈值。</p>
+<p>已附对照脚本 <code>lowfreq_local/analyze_lf.py</code>，在你本地（能连库、已生成真实 records.json 的环境）运行：</p>
+<pre>cd lowfreq_local
+python analyze_lf.py</pre>
+<p>它会输出：<code>active_total</code>、当前口径低频数、旧口径低频数、两者差（应为 ≤0，印证新口径更宽）、以及新口径各档位分布。用这一个数字就能看穿"是母集缩了还是逻辑变了"。</p>
+
+<h2>五、如何验证"母集确实缩小了"</h2>
+<p><b>① 看板自带的 diagnostic 面板</b>：打开看板 → 诊断区查看 <code>active_total</code> 与当年截图对比。</p>
+<p><b>② 直接查数据库 status 分布（若比当年少一大截，即母集缩小主因）：</b></p>
+<pre>SELECT status, COUNT(*) c
+FROM cb_exchange_agreement
+WHERE is_del = 0
+GROUP BY status;</pre>
+<p>若大量协议 status 变成了 <code>finished / expired / closed / refunded</code> 等非活跃值，或 <code>is_del</code> 被批量置 1，那就是母集缩小的来源——这发生在抽数 SQL 之前，<b>任何前端/阈值改动都无法让它们重新进入统计</b>。</p>
+
+<h2>六、下一步建议</h2>
+<ul>
+  <li><span class="key">先定位母集变化：</span>跑上面 SQL，确认是真实退订潮，还是 status 被批量误改/口径漂移。前者是业务事实，数字就该低；后者需从源库纠正。</li>
+  <li><span class="key">若确需放宽活跃定义：</span>可在 <code>db_conf.json</code> 配置 <code>extra_statuses</code>（如把 <code>finished</code> 等纳入），系统已有可配置位，不要改 SQL 硬编码。</li>
+  <li><span class="key">阈值保持现状即可：</span>当前已是最宽松（无 15 天保护、全产品参与），再放宽也不会让母集回升，反而会把真实活跃用户误判为低频。</li>
+</ul>
+
+<div class="note">
+附：本目录还有 <code>低频用户统计口径说明.html</code>（统计思路文档）。沙箱内无真实数据库、无 git 历史，本结论基于当前代码与对话推断；如你有"三千多"时期的截图或当时的 build_lists.py，可用来校准旧口径细节。
+</div>
+</div>
+</body>
+</html>

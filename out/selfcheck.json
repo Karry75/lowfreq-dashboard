@@ -1,0 +1,476 @@
+[
+  {
+    "mod": "语法编译",
+    "item": "38 个 .py 全部编译",
+    "ok": true,
+    "note": "全部通过"
+  },
+  {
+    "mod": "依赖库",
+    "item": "pymysql",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "依赖库",
+    "item": "openpyxl",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "import should_follow_up",
+    "ok": true,
+    "note": "入口 shouldFollowUp()"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "末次=柜内归还电池 + SN=暂无电池 → False",
+    "ok": true,
+    "note": "返回=False 期望=False"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "末次=柜内借出电池 + SN 有值    → True",
+    "ok": true,
+    "note": "返回=True 期望=True"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "末次=柜内归还电池 + SN 有值    → True",
+    "ok": true,
+    "note": "返回=True 期望=True"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "末次 SN 字段缺失              → True",
+    "ok": true,
+    "note": "返回=True 期望=True"
+  },
+  {
+    "mod": "规则引擎",
+    "item": "空历史                        → True",
+    "ok": true,
+    "note": "返回=True 期望=True"
+  },
+  {
+    "mod": "环境模块",
+    "item": "import env",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "配置文件",
+    "item": "db_conf.json 必需键",
+    "ok": true,
+    "note": "6/6 齐全"
+  },
+  {
+    "mod": "配置文件",
+    "item": "lowfreq 阈值 4 档",
+    "ok": true,
+    "note": "8 个键"
+  },
+  {
+    "mod": "派单模块",
+    "item": "import assign",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "派单模块",
+    "item": "run_assignment()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "派单模块",
+    "item": "load_config()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "派单模块",
+    "item": "save()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "派单模块",
+    "item": "load_assignments()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "派单模块",
+    "item": "sync_rebalance()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "派单模块",
+    "item": "replace_assignment()",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "import serve",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/* 路由 27 个",
+    "ok": true,
+    "note": "/api/ai_classify, /api/assign, /api/assignments, /api/auth, /api/battery_now, /api/cancel_solver, /api/clear_assignments, /api/clear_history, /api/force_run, /api/history, /api/history_dates, /api/lan_info, /api/login, /api/mark_no_followup, /api/mark_visit, /api/no_followup, /api/no_followup_add, /api/no_followup_remove, /api/reassign, /api/rec_categories, /api/redispatch, /api/replace_assignment, /api/replace_candidates, /api/self_update, /api/staff, /api/tags, /api/version"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/force_run",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/redispatch",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/assignments",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/version",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/login",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "/api/battery_now",
+    "ok": true,
+    "note": "存在"
+  },
+  {
+    "mod": "Web服务",
+    "item": "importlib.reload 热重载",
+    "ok": true,
+    "note": "4 处"
+  },
+  {
+    "mod": "看板生成",
+    "item": "__DATA__ 注入",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板生成",
+    "item": "__DEFAULT_UPDATE_URL__",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板生成",
+    "item": "导出全部开关 __EXPORT_ALL__",
+    "ok": true,
+    "note": "4 处"
+  },
+  {
+    "mod": "取数模块",
+    "item": "__VERSION__",
+    "ok": true,
+    "note": "v10.28.30"
+  },
+  {
+    "mod": "取数模块",
+    "item": "USE_NEED_FOLLOWUP_FILTER 默认关",
+    "ok": true,
+    "note": "False = 昨日正常口径"
+  },
+  {
+    "mod": "取数模块",
+    "item": "_circ_from_log 修复 (v10.28.30)",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "取数模块",
+    "item": "to_ms 兼容 datetime",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "取数模块",
+    "item": "records 横杠兜底",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "运行产物",
+    "item": "records.json",
+    "ok": true,
+    "note": "25,695,882 B"
+  },
+  {
+    "mod": "运行产物",
+    "item": "followup_dashboard.html",
+    "ok": true,
+    "note": "25,911,591 B"
+  },
+  {
+    "mod": "运行产物",
+    "item": "assignments.json",
+    "ok": true,
+    "note": "384,865 B"
+  },
+  {
+    "mod": "运行产物",
+    "item": "回访名单.xlsx",
+    "ok": true,
+    "note": "5,140,804 B"
+  },
+  {
+    "mod": "看板内容",
+    "item": "文件大小",
+    "ok": true,
+    "note": "22,067,880 字符"
+  },
+  {
+    "mod": "看板内容",
+    "item": "Tab 数 10",
+    "ok": true,
+    "note": "全部活跃协议 / 欠租催收 / 低频用户 / 低频用户数据分析 / 回访看板 / 回访排班 / 回访调度 / 排班总览 / 历史排班 / 无需回访"
+  },
+  {
+    "mod": "看板内容",
+    "item": "10 个必需 Tab 齐全",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "低频用户数据分析 筛选维度 7 个",
+    "ok": true,
+    "note": "filterProduct(全部电池产品), filterAgent(全部代理商), filterCity(全部城市), filterArea(全部区域), filterStreet(全部街道), filterCommunity(全部社区), filterCircQuarter(全部流通季度)"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部电池产品」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部代理商」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部城市」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部区域」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部街道」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部社区」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "筛选项「全部流通季度」",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "导出当前筛选(名单)",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "导出全部(名单)",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "导出当前筛选(分析)",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "导出全部(分析)",
+    "ok": true,
+    "note": "OK"
+  },
+  {
+    "mod": "看板内容",
+    "item": "__DATA__ 已替换",
+    "ok": true,
+    "note": "无残留占位符"
+  },
+  {
+    "mod": "看板内容",
+    "item": "模板区无 -- 占位",
+    "ok": true,
+    "note": "\">0\" 处"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "auto_sync.bat",
+    "ok": true,
+    "note": "引用 ['auto_sync.py']"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "auto_update_sync.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "dump_schema.bat",
+    "ok": true,
+    "note": "引用 ['dump_schema.py']"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "fix_and_sync.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "fix_records.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "gen_assignments.bat",
+    "ok": true,
+    "note": "引用 ['gen_assignments.py']"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "gen_assignments_reset.bat",
+    "ok": true,
+    "note": "引用 ['gen_assignments.py']"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "remove_auto_sync.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "remove_daily_task.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "run_serve.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "run_silent.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "run_sync.bat",
+    "ok": true,
+    "note": "引用 ['auto_update.py']"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "safe_update.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "setup_auto_sync.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "setup_daily_task.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "start.bat",
+    "ok": true,
+    "note": "无 .py 引用"
+  },
+  {
+    "mod": "bat完整性",
+    "item": "update.bat",
+    "ok": true,
+    "note": "引用 ['update.py']"
+  },
+  {
+    "mod": "业务数据",
+    "item": "records 条数",
+    "ok": true,
+    "note": "23,693 条"
+  },
+  {
+    "mod": "业务数据",
+    "item": "低频用户 > 0",
+    "ok": true,
+    "note": "23,693 条"
+  },
+  {
+    "mod": "业务数据",
+    "item": "可回访 followable > 0",
+    "ok": true,
+    "note": "23,693 条  ← 名单能否生成的关键"
+  },
+  {
+    "mod": "业务数据",
+    "item": "欠租催收 > 0",
+    "ok": true,
+    "note": "1,359 条"
+  },
+  {
+    "mod": "业务数据",
+    "item": "关键列横杠率",
+    "ok": true,
+    "note": "pkg:0 / vol:0 / cur:0 / dep:0 / soc:0"
+  }
+]

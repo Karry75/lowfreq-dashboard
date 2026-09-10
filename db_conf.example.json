@@ -1,0 +1,32 @@
+{
+  "_comment": "【样例配置 · 非真实数据】复制本文件为 db_conf.json 并填入你的 MySQL 连接信息。请勿将含真实凭证的 db_conf.json 提交到公开仓库。",
+  "host": "your-public-mysql-host.example.com",
+  "intranet_host": "192.168.1.100",
+  "port": 3306,
+  "user": "readonly_user",
+  "password": "CHANGE_ME",
+  "database": "battery_exchange",
+  "connect_timeout": 30,
+  "read_timeout": 300,
+  "write_timeout": 60,
+
+  "_comment_thresholds": "低频阈值；规则：(1)~(4) 为基础 4 档口径（带 15 天新用户保护）；(5) 第 5 条 L5：对生效≤15天的新用户，电池电量 < lowfreq_power_threshold% 即标 L5 提醒换电（不看是否换过电）；对生效>15天的协议，需15天内0次换电(c15==0) 且 电池电量 < lowfreq_power_threshold% 才标 L5。改完保存后下次同步即生效，无需重打包。",
+  "lowfreq_thresholds": {
+    "protected_days": 15,
+    "L1_max_days": 30,
+    "L1_min_count": 1,
+    "L2_max_days": 45,
+    "L2_min_count": 2,
+    "L3_max_days": 60,
+    "L3_min_count": 3,
+    "L4_min_count": 4
+  },
+  "lowfreq_power_threshold": 25,
+  "recent_swap_filter_days": 15,
+
+  "_comment_maps": "v10.28.45 可选配置：当员工表自动探测失败、或接待 type 字段是数字编码时，在此手动填映射，排行/标签即可显示真实名称而非「员工#N」「标签#N」。改完保存后下次同步即生效。",
+  "solver_id_map": {
+  },
+  "recp_type_map": {
+  }
+}

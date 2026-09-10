@@ -1,0 +1,24 @@
+{
+ "now": "2026-08-28 10:00",
+ "active_total": 23693,
+ "active_status_count": {
+  "owe_rent": 1359,
+  "unsubscribing": 1641,
+  "terminated": 200,
+  "working": 20493
+ },
+ "active_type_count": {
+  "个人": 23693
+ },
+ "active_product_count": {
+  "杭州4824": 7898,
+  "葫芦4814": 7898,
+  "深圳4824": 7897
+ },
+ "lf_count": 23693,
+ "owe_count": 1359,
+ "lf_users": 23693,
+ "owe_users": 1359,
+ "all_status_count": {},
+ "all_type_count": {}
+}

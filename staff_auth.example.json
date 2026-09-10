@@ -1,0 +1,14 @@
+{
+  "_comment": "【样例配置 · 非真实数据】复制本文件为 staff_auth.json 并替换为你的真实账号。请勿将含真实 token/密码的 staff_auth.json 提交到公开仓库。",
+  "admin_token": "REPLACE_WITH_YOUR_ADMIN_TOKEN",
+  "admin": {
+    "username": "admin",
+    "password": "CHANGE_ME",
+    "role": "admin"
+  },
+  "users": [
+    { "username": "operator1", "password": "CHANGE_ME", "role": "operator" },
+    { "username": "operator2", "password": "CHANGE_ME", "role": "operator" },
+    { "username": "viewer", "password": "CHANGE_ME", "role": "viewer" }
+  ]
+}

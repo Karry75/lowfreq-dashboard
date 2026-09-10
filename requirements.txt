@@ -1,0 +1,18 @@
+# 低频用户 · 欠租催收回访看板 —— 依赖清单（v10.28.52）
+# 必装
+pymysql>=1.1.0
+openpyxl>=3.1.0
+requests>=2.31.0
+# 可选
+flask>=3.0.0        # serve.py 内置 http.server，本地调试可选
+fastapi>=0.110.0
+uvicorn>=0.27.0
+markdown>=3.5.0
+weasyprint>=60.0    # PDF 导出
+pillow>=10.0.0
+matplotlib>=3.8.0
+numpy>=1.26.0
+pandas>=2.1.0
+tabulate>=0.9.0
+reportlab>=4.0.0
+beautifulsoup4>=4.12.0

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>低频用户 · 统计口径与数量骤降排查说明</title>
+<style>
+  :root{--blue:#1e6fd9;--line:#e3e8ef;--bg:#f6f8fb;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:#1f2933;line-height:1.75;}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 60px;}
+  h1{font-size:24px;margin:0 0 6px;color:var(--blue);}
+  h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--blue);}
+  h3{font-size:15px;margin:18px 0 6px;color:#333;}
+  .sub{color:#6b7280;font-size:13px;margin-bottom:18px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#eef3fb;font-weight:600;}
+  code{background:#eef1f5;padding:1px 6px;border-radius:5px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#b3401f;}
+  .kv{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;font-size:13.5px;}
+  .kv div:nth-child(odd){color:#6b7280;}
+  .ok{color:#1a7f37;font-weight:600;}
+  .warn{color:#b45309;font-weight:600;}
+  .bad{color:#b91c1c;font-weight:600;}
+  .tag{display:inline-block;background:#eef3fb;color:var(--blue);border-radius:6px;padding:1px 8px;font-size:12px;margin-right:4px;}
+  .note{font-size:13px;color:#555;background:#fff8ec;border-left:3px solid #f0a500;padding:10px 14px;border-radius:6px;margin:10px 0;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;font-size:13.5px;}
+  .step{background:#eef3fb;border:1px solid #cfe0fb;border-radius:8px;padding:8px 12px;}
+  .arrow{color:#9aa5b1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>低频用户统计口径与数量骤降排查说明</h1>
+  <div class="sub">适用版本：v10.8.5（与 v10.6 ~ v10.8.4 统计逻辑完全一致，本版未改动任何统计代码）</div>
+
+  <div class="card">
+    <b>一句话结论：</b>低频用户数量从 <span class="bad">3000+</span> 降到 <span class="bad">1000+</span>，<b>不是统计算错、也不是数据不准</b>，而是<b>统计的母集（活跃协议）变小了</b>——这是数据库侧（协议 status 被改 / 被打 <code>is_del=1</code>）引起的输入变化。<b>低频是活跃协议的子集，母集缩了，子集必然缩。</b>
+  </div>
+
+  <h2>一、统计思路（5 步流水线）</h2>
+
+  <div class="flow">
+    <span class="step">① 定数据截止 NOW</span><span class="arrow">→</span>
+    <span class="step">② 圈活跃协议母集</span><span class="arrow">→</span>
+    <span class="step">③ 算累计换电次数 total</span><span class="arrow">→</span>
+    <span class="step">④ 算生效天数 use_days</span><span class="arrow">→</span>
+    <span class="step">⑤ 低频判定 + 分级</span>
+  </div>
+
+  <h3>① 数据截止时间 NOW</h3>
+  <div class="kv">
+    <div>取值</div><div><code>NOW = MAX(back_battery_time)</code>，取自 <code>cb_exchange_order</code>（即"最近一次成功归还/换电"的时间）</div>
+    <div>作用</div><div>所有"天数 / 时间窗口"都相对 NOW 计算。<b>只影响 L1~L4 的分档，不影响低频"是否命中"（因为各档阈值 1/2/3/4 是固定值）</b></div>
+  </div>
+
+  <h3>② 圈定"活跃协议"母集（所有名单的源头）</h3>
+  <div class="card" style="background:#f3f7fd">
+    <code>SELECT ... FROM cb_exchange_agreement a<br>
+    &nbsp;&nbsp;LEFT JOIN cb_battery_product p ...<br>
+    &nbsp;&nbsp;LEFT JOIN cb_site s ...<br>
+    WHERE a.status IN ('working','owe_rent','unsubscribing') AND a.is_del=0</code>
+  </div>
+  <div class="kv">
+    <div>含义</div><div>这就是"全部活跃协议"数字，也是"欠租催收""低频用户"的<b>共同母集</b></div>
+    <div>版本一致性</div><div class="ok">v10.6 → v10.8.5 该 SQL 完全相同，未改</div>
+  </div>
+
+  <h3>③ 累计换电次数 total（每条活跃协议）</h3>
+  <div class="kv">
+    <div>来源</div><div><code>cb_exchange_order WHERE back_battery_time&gt;0 AND is_del=0</code>，按 <code>exchange_agreement_id</code> 聚合 <code>COUNT(DISTINCT id) AS total</code></div>
+    <div>含义</div><div>"该协议生效以来，成功换电（归还）了多少次"</div>
+  </div>
+
+  <h3>④ 协议生效天数 use_days</h3>
+  <div class="kv">
+    <div>计算</div><div><code>use_days = (NOW − activation_time) ÷ 1天</code></div>
+    <div>保护</div><div>生效 <code>≤15 天</code> 的协议直接不进入低频判定（新用户保护）</div>
+  </div>
+
+  <h3>⑤ 低频判定与分级（仅 use_days&gt;15 才判定）</h3>
+  <table>
+    <tr><th>生效天数区间</th><th>判定条件 (total)</th><th>档位</th></tr>
+    <tr><td>15 ~ 30 天</td><td>total &lt; 1</td><td>L1 · 15~30天档</td></tr>
+    <tr><td>30 ~ 45 天</td><td>total &lt; 2</td><td>L2 · 30~45天档</td></tr>
+    <tr><td>45 ~ 60 天</td><td>total &lt; 3</td><td>L3 · 45~60天档</td></tr>
+    <tr><td>&gt; 60 天</td><td>total &lt; 4</td><td>L4 · &gt;60天档</td></tr>
+  </table>
+  <div class="note">命中任一档 → <code>is_lf = True</code> → 计入"低频用户"。<b>维度提示：</b>看板/Excel 里"低频用户数"有两个口径——<b>份数</b>（协议数 <code>len(lf_list)</code>）和<b>去重用户数</b>（<code>len(set(user_id))</code>），别混用。</div>
+
+  <h2>二、为什么数字会从 3000+ 掉到 1000+（核心排查）</h2>
+  <div class="card">
+    <p style="margin-top:0"><b>低频数量只由两个输入决定：活跃协议母集大小 + 各协议的换电次数 total。</b>代码没动，所以下降只能来自这两个输入的变化：</p>
+    <table>
+      <tr><th>可能原因</th><th>对低频数量的影响</th><th>是否符合"下降"</th></tr>
+      <tr>
+        <td><b>活跃协议母集缩小</b><br>（大量协议 status 被改 / 被打 <code>is_del=1</code>）</td>
+        <td>母集从几千条→几百条，低频作为其子集<b>同比例缩小</b></td>
+        <td class="ok">✓ 正是下降方向</td>
+      </tr>
+      <tr>
+        <td><b>换电记录变少</b><br>（<code>back_battery_time</code> 被清 / <code>is_del</code> 被置 1，total 变小）</td>
+        <td>total 越小越容易命中低频，低频数量会<b>上升</b>而非下降</td>
+        <td class="bad">✗ 方向相反</td>
+      </tr>
+    </table>
+    <p style="margin-bottom:0"><b>结论：</b>出现"下降"，恰恰说明是<b>母集在缩</b>，而不是换电记录少了。这与昨天排查的"关深圳4824 活跃协议从三千多→一百多"是<b>同一根因</b>——你两次看到的是不同维度（一个是全部低频，一个是深圳4824 这一个产品的活跃数），根子都在于数据库里这批协议的状态 / 删除标记变了。</p>
+  </div>
+
+  <h2>三、怎么坐实"是数据库侧变化"（自助验证）</h2>
+  <div class="kv">
+    <div>看板上</div><div>升级 v10.8.5 后，打开「数据说明」里的 <b>diagnostic 面板</b>，重点看：<br>
+      · <code>active_total</code>（当前活跃协议总数）<br>
+      · <code>all_status_count</code>（全表 is_del=0 各 status 分布）<br>
+      · <code>active_type_count</code> / <code>active_product_count</code></div>
+    <div>对比法</div><div>把现在的 <code>active_total</code> 与你记忆中 v10.6 时期的同名数字对比：<br>
+      · 若全表 <code>working/owe_rent/unsubscribing</code> 本身就少了几千条 → 协议<b>状态被改</b>；<br>
+      · 若全表总数正常但活跃数变少 → 被打了 <code>is_del=1</code>。</div>
+    <div>文件佐证</div><div>每次抽数 <code>build_lists.py</code> 都会写出 <code>out/diagnostic.json</code> 并在 <code>records.json</code> 内嵌 <code>diagnostic</code>，可直接拿给 DBA 核对。</div>
+  </div>
+
+  <h2>四、关于"系统更新里填直链的框不见了"</h2>
+  <div class="note" style="background:#eef6ee;border-left-color:#1a7f37">
+    已核验：v10.8.5 的发布包、生成的 <code>followup_dashboard.html</code>、以及后端 <code>/api/self_update</code> 接口三者都<b>完好</b>。看板<b>最顶部</b>的「系统更新」横幅里，一直有"粘贴更新包直链"输入框 + 「检查并更新」按钮。看不到通常是以下原因：
+    <ul style="margin:8px 0 0">
+      <li><b>浏览器缓存</b> → 按 <code>Ctrl+F5</code> 硬刷新；</li>
+      <li><b>打开方式错</b> → 必须访问 <code>http://127.0.0.1:8173/</code>，不要双击本地 HTML 文件；</li>
+      <li><b>自动更新已接管</b> → <code>auto_update_sync.bat</code> 现在自动读 <code>update_url.txt</code> 里的稳定直链，免手动粘贴；想换链接仍可手动在看板里粘贴任意直链覆盖。</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:24px;font-size:13px;color:#6b7280">
+    <b>附：v10.8.5 本次未改动统计代码的证据</b><br>
+    · 活跃协议 SQL 行：<code>WHERE a.status IN ('working','owe_rent','unsubscribing') AND a.is_del=0</code>（与历史版本逐字一致）<br>
+    · 低频判定 <code>if use_days&gt;15: ... total&lt;1/&lt;2/&lt;3/&lt;4</code>（未改）<br>
+    · 本版新增项仅：协议类型字段、无需回访名单、诊断面板（diagnostic 仅展示、不参与过滤），均不影响低频计数。
+  </div>
+</div>
+</body>
+</html>

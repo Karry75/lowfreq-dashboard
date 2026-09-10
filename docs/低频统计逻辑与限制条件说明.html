@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>低频用户统计思维 · 逻辑 · 限制条件 · 筛选机制</title>
+<style>
+  :root{--b:#1F4E78;--o:#C0392B;--g:#16a34a;--y:#B8860B;--bg:#f7f9fc;--bd:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:#1f2933;line-height:1.7;padding:28px;}
+  .wrap{max-width:960px;margin:0 auto;background:#fff;border:1px solid var(--bd);border-radius:12px;padding:32px 36px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+  h1{color:var(--b);font-size:24px;margin-bottom:6px;}
+  h2{color:var(--b);font-size:18px;margin:28px 0 10px;border-left:4px solid var(--b);padding-left:10px;}
+  h3{color:#334;font-size:15px;margin:16px 0 6px;}
+  p{margin:8px 0;}
+  .lead{background:#eef4fb;border:1px solid #cfe0f3;border-radius:8px;padding:14px 16px;color:#234;margin:10px 0 18px;}
+  .warn{background:#fdf3f2;border:1px solid #f0c9c4;border-left:4px solid var(--o);border-radius:6px;padding:12px 14px;margin:12px 0;}
+  .ok{background:#eefaf1;border:1px solid #c8e8d0;border-left:4px solid var(--g);border-radius:6px;padding:12px 14px;margin:12px 0;}
+  .flag{background:#fff8e8;border:1px solid #f0dca0;border-left:4px solid var(--y);border-radius:6px;padding:12px 14px;margin:12px 0;}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--bd);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#eef2f7;color:#234;font-weight:600;}
+  code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12.5px;color:#9a3412;}
+  .k{display:inline-block;background:var(--b);color:#fff;border-radius:4px;padding:1px 7px;font-size:12px;margin-right:6px;}
+  .muted{color:#667;font-size:12.5px;}
+  ul,ol{margin:8px 0 8px 22px;}
+  li{margin:4px 0;}
+  .formula{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px;padding:10px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#334;margin:8px 0;}
+  .foot{margin-top:26px;border-top:1px solid var(--bd);padding-top:14px;color:#789;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>低频用户统计思维 · 逻辑 · 限制条件 · 筛选机制</h1>
+  <div class="lead">
+    一句话结论：<b>「低频」=「签了换电协议、但近期几乎不换电」的用户</b>，目的是筛出需要电话/短信唤醒的人。
+    整套统计<b>没有按产品、协议类型砍数据</b>——深圳4824 看到的400多，是它自己在活跃母集里的真实切片，
+    不是被算少了；而三千多/1717 是<b>所有产品加总</b>的全量，和单一产品不是同一量级。
+  </div>
+
+  <h2>一、统计思维（为什么这么算）</h2>
+  <p>核心目标只有一条：<b>找出"协议在生效、但电池几乎不流动"的用户</b>。换电次数越少，说明用户越不活跃、越可能流失或沉睡。</p>
+  <ul>
+    <li>用「<b>归还电池次数</b>」衡量活跃度——借了又还才有换电行为；长期不还 / 不借，就是静止。</li>
+    <li>用「<b>协议生效天数</b>」分档——刚激活的用户换电少是正常的（新用户保护），老用户换电少才异常。</li>
+    <li>不满足"任一档"的，就是正常活跃用户，<b>不</b>进回访名单。</li>
+  </ul>
+
+  <h2>二、统计逻辑（判定公式）</h2>
+  <div class="formula">低频 = 在「活跃协议母集」中，按"协议生效天数"分档，累计换电次数低于阈值的协议
+判定维度：cb_exchange_order.back_battery_time &gt; 0 的订单数（DISTINCT 订单ID），即「归还电池次数」
+数据截止：cb_exchange_order 中最新一条 back_battery_time（覆盖到 2026 年）</div>
+
+  <table>
+    <tr><th>协议生效天数（use_days）</th><th>判定：累计换电次数 &lt;</th><th>档位</th><th>含义</th></tr>
+    <tr><td>≤ 15 天</td><td>— （不判定）</td><td>保护</td><td>新激活用户，换电少属正常，<b>不计入低频</b></td></tr>
+    <tr><td>15 ~ 30 天</td><td>3 次</td><td>L1</td><td>最严重：近半月几乎没换电</td></tr>
+    <tr><td>30 ~ 45 天</td><td>4 次</td><td>L2</td><td>较严重</td></tr>
+    <tr><td>45 ~ 60 天</td><td>5 次</td><td>L3</td><td>中等</td></tr>
+    <tr><td>&gt; 60 天</td><td>9 次</td><td>L4</td><td>最轻：老用户长期低频</td></tr>
+  </table>
+  <p class="muted">阈值来自 <code>db_conf.json</code> 的 <code>lowfreq_thresholds</code>，可本地自行调宽/调严，无需重新打包。</p>
+
+  <h2>三、限制条件（什么会被排除 / 缩窄）</h2>
+  <p>这是"三千多 → 一千多"的真正原因所在，按影响从大到小：</p>
+  <table>
+    <tr><th>限制点</th><th>具体规则</th><th>影响</th></tr>
+    <tr><td><span class="k">母集</span>活跃协议定义</td><td><code>status IN ('working','owe_rent','unsubscribing') AND is_del=0</code></td><td><b>主导因素</b>。退订/到期/被误删的协议都不算，母集越小低频越少。</td></tr>
+    <tr><td><span class="k">新用户</span>保护</td><td>生效 ≤15 天不参与判定</td><td>不把刚激活的用户误判为低频。</td></tr>
+    <tr><td><span class="k">换电</span>口径</td><td>只算"归还电池"<code>back_battery_time&gt;0</code>，不算"取电池"</td><td>仅有效归还事件计入；仅借不还很久没还的，次数低→偏低频。</td></tr>
+    <tr><td><span class="k">时间</span>窗口</td><td>以最新归还时间为 NOW 截止；各档只统计窗口内次数</td><td>历史老订单不影响当前分档。</td></tr>
+    <tr><td><span class="k">阈值</span></td><td>L4&lt;9 等（v10.11 放宽版）</td><td>调大→低频变多，调小→变少。</td></tr>
+  </table>
+  <div class="warn"><b>关键提醒：</b>以上限制全部作用在「<b>全量母集</b>」上，对<b>所有产品一视同仁</b>。没有任何一条是"只针对深圳4824"或"按产品类型豁免"。所以深圳4824的低频少，不是限制条件在针对它。</div>
+
+  <h2>四、筛选机制（前端怎么"看"）</h2>
+  <p>看板顶部的筛选（省市区街道 / 电池产品 / 协议类型 / 协议状态 / 是否低频 / 档位 / 协议ID / 关键词）都是<b>视图筛选</b>——它们只是从全量 <code>records.json</code> 里<b>挑出子集给你看</b>，<b>不会</b>重新计算或砍掉数据。</p>
+  <ul>
+    <li><b>协议类型</b>：默认"全部（个人+企业）"，不限制。之前默认"个人"的坑已修复。</li>
+    <li><b>电池产品</b>：下拉选某产品后，KPI 的「低频用户」= <code>该产品 且 is_lf=1</code> 的数量。选"深圳4824"看到400多，就是它真实的低频切片。</li>
+    <li><b>诊断面板</b>：展示活跃协议总数、各产品分布、全表状态分布，用来核对母集有没有异常缩小。</li>
+  </ul>
+  <div class="ok"><b>所以：你看到的每个数字，底层都是 <code>records.json</code> 里真实算出来的，前端没有二次运算、没有隐藏过滤。</b></div>
+
+  <h2>五、为什么"深圳4824低频才四百多"——认知澄清</h2>
+  <div class="flag">
+    <b>最大的认知陷阱：把「全量低频」和「单一产品低频」当成同一量级。</b>
+    <ul style="margin-top:6px">
+      <li>三千多 / 1717 = <b>所有电池产品加总</b>的全量低频（深圳4824 + 杭州4824 + 阳朔4824 + 各4814 + 其它产品）。</li>
+      <li>深圳4824 = <b>其中一个产品</b>的低频切片。6个优选产品每个400~600，加起来就已接近三千多。</li>
+    </ul>
+  </div>
+  <p>其次，深圳4824 是<b>高频换电产品</b>——用户天天换电，累计换电次数天然高，<b>低频比例本就偏低</b>。如果它低频都上千，那反而不正常（说明用户都不用了）。</p>
+  <p>真正的判断标准只有一个：<b>深圳4824在活跃母集里到底有多少协议？</b></p>
+  <ul>
+    <li>若深圳4824活跃协议只有 ~700~900 个，低频400多（占比50%+）——<b>完全正常，甚至偏高</b>。</li>
+    <li>若深圳4824活跃协议有数千却只低频400多——那要查"低频用户平均换电次数"，如果平均换电很高，说明产品本身就高频，低频少是正常现象。</li>
+  </ul>
+  <div class="warn"><b>还有一处要核对：</b>下拉里"深圳4824"对应的 <code>product</code> 名称必须和数据库 <code>cb_battery_product.name</code> <b>完全一致</b>（精确匹配）。若库里实际叫"深圳4824电池"或"4824型"，你选"深圳4824"会匹配不到，数字就会偏小。请在看板下拉里确认实际选项文字。</div>
+
+  <h2>六、怎么自己核对真相（30秒）</h2>
+  <p>已为你准备好脚本 <code>lowfreq_local/analyze_products.py</code>，直接读你本地刚同步的 <code>out/records.json</code>，按产品统计：</p>
+  <div class="formula">cd lowfreq_local
+python3 analyze_products.py</div>
+  <p>输出每个产品的：活跃协议数 / 低频用户 / L1~L4 各档 / 低频占比 / 平均累计换电，并单独高亮含"4824/4814"的产品。一看就知道深圳4824的400多是怎么来的。</p>
+
+  <div class="foot">
+    数据来源：cb_exchange_agreement（协议母表）· cb_exchange_order（换电/归还表）· cb_battery_product（产品名）。
+    判定阈值见 db_conf.json → lowfreq_thresholds。本文档由系统自动整理，对应 v10.11 统计口径。
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+{
+  "total": 2400,
+  "conv_total": 0,
+  "conv_rate": 0.0,
+  "conv_30": 0,
+  "conv_rate_30": 0.0,
+  "silent": 2200,
+  "unsub": 0,
+  "unsubscribing": 200,
+  "funnel": [
+    {
+      "grade": "S1",
+      "name": "已换电·当日促成",
+      "color": "#0a8a3a",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S2",
+      "name": "已换电·1-7天促成",
+      "color": "#2bb55a",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S3",
+      "name": "已换电·8-30天促成",
+      "color": "#7acb80",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S4",
+      "name": "已换电·31-90天促成",
+      "color": "#b8e07b",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S5",
+      "name": "已换电·90天+促成",
+      "color": "#cfe8a0",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S6",
+      "name": "在租沉默·未促成",
+      "color": "#f3b441",
+      "count": 2200,
+      "pct": 91.7
+    },
+    {
+      "grade": "S7",
+      "name": "已退订·挽回失败",
+      "color": "#9aa4b2",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S8",
+      "name": "已归还·未再借",
+      "color": "#e58a3a",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S9",
+      "name": "电池已回收",
+      "color": "#d2603a",
+      "count": 0,
+      "pct": 0.0
+    },
+    {
+      "grade": "S10",
+      "name": "退订中·未结案",
+      "color": "#b084cc",
+      "count": 200,
+      "pct": 8.3
+    }
+  ],
+  "by_solver": [
+    {
+      "name": "员工#10",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#11",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#14",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#18",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#21",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#08",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#05",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#04",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#24",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#19",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#16",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#01",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#27",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#12",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#25",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#06",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#13",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#22",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#07",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    },
+    {
+      "name": "员工#09",
+      "total": 120,
+      "conv": 0,
+      "rate": 0.0
+    }
+  ],
+  "by_tag": [
+    {
+      "name": "其他杂项",
+      "total": 2400,
+      "conv": 0,
+      "rate": 0.0
+    }
+  ],
+  "dist": [
+    {
+      "name": "0d",
+      "count": 0
+    },
+    {
+      "name": "1d",
+      "count": 0
+    },
+    {
+      "name": "3d",
+      "count": 0
+    },
+    {
+      "name": "7d",
+      "count": 0
+    },
+    {
+      "name": "15d",
+      "count": 0
+    },
+    {
+      "name": "30d",
+      "count": 0
+    },
+    {
+      "name": "90d+",
+      "count": 0
+    }
+  ],
+  "ready": true,
+  "ready_rows": 2400
+}
