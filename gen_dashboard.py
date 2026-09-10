@@ -249,7 +249,9 @@ print('[v10.28.57] 列式编码：%d 行 × %d 列 → %s（%.1f KB，gzip 前�
 
 _d_dashboard = dict(d)
 _d_dashboard['rows'] = []                 # v10.28.57：明细不再内联，改由 __COLS__ 列式展开
-_d_dashboard['reception_detail'] = []     # 空数组占位，运行时按需加载
+# v10.28.57：reception_detail 内联进 HTML（仅 166 条，约几十 KB），
+#   既保证静态发布（无后端）时明细视图可用，本地服务也可经 /api/reception_detail 刷新。
+_d_dashboard['reception_detail'] = d.get('reception_detail', []) or []
 _d_dashboard['_colsn'] = COLS['n']
 
 records_summary = {
