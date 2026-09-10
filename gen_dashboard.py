@@ -251,7 +251,15 @@ _d_dashboard = dict(d)
 _d_dashboard['rows'] = []                 # v10.28.57：明细不再内联，改由 __COLS__ 列式展开
 # v10.28.57：reception_detail 内联进 HTML（仅 166 条，约几十 KB），
 #   既保证静态发布（无后端）时明细视图可用，本地服务也可经 /api/reception_detail 刷新。
-_d_dashboard['reception_detail'] = d.get('reception_detail', []) or []
+# v10.28.57-hotfix：records.json 里 reception_detail 实际是 dict{id:row}，前端用 .filter/.flatMap 会报
+#   "is not a function"。这里统一转 list，确保 DATA.reception_detail 是数组。
+_rd = d.get('reception_detail')
+if isinstance(_rd, dict):
+    _d_dashboard['reception_detail'] = list(_rd.values())
+elif isinstance(_rd, list):
+    _d_dashboard['reception_detail'] = _rd
+else:
+    _d_dashboard['reception_detail'] = []
 _d_dashboard['_colsn'] = COLS['n']
 
 records_summary = {
